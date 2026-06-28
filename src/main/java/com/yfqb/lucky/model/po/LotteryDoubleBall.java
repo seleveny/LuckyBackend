@@ -4,7 +4,6 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -49,22 +48,22 @@ public class LotteryDoubleBall {
     private Integer blue;
 
     /** 奖池金额（元） */
-    private BigDecimal poolAmount;
+    private String poolAmount;
 
     /** 一等奖注数 */
-    private Integer firstPrizeCount;
+    private String firstPrizeCount;
 
     /** 一等奖单注金额（元） */
-    private BigDecimal firstPrizeAmount;
+    private String firstPrizeAmount;
 
     /** 二等奖注数 */
-    private Integer secondPrizeCount;
+    private String secondPrizeCount;
 
     /** 二等奖单注金额（元） */
-    private BigDecimal secondPrizeAmount;
+    private String secondPrizeAmount;
 
     /** 本期销售额（元） */
-    private BigDecimal salesAmount;
+    private String salesAmount;
 
     /** 创建时间 */
     private LocalDateTime createTime;

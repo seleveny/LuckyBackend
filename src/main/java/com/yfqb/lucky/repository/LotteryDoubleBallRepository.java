@@ -30,6 +30,11 @@ public interface LotteryDoubleBallRepository extends R2dbcRepository<LotteryDoub
     Mono<LotteryDoubleBall> findTopByOrderByDrawDateDesc();
 
     /**
+     * 查询最早一期
+     */
+    Mono<LotteryDoubleBall> findTopByOrderByDrawDateAsc();
+
+    /**
      * 查询最近 N 期
      */
     Flux<LotteryDoubleBall> findTop100ByOrderByDrawDateDesc();

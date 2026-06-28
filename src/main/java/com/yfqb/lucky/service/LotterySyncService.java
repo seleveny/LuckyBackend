@@ -15,7 +15,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -36,7 +35,7 @@ public class LotterySyncService {
     private final LotteryApiConfig lotteryApiConfig;
     private final LotteryDoubleBallRepository ballRepository;
     private final LotteryDoubleBallNumberRepository numberRepository;
-    private final WebClient webClient;
+    private final WebClient cwlWebClient;
     private final ObjectMapper objectMapper;
     private final TransactionalOperator transactionalOperator;
 
@@ -100,19 +99,38 @@ public class LotterySyncService {
      *
      * @param count 参数已废弃，保留仅用于兼容
      */
+    /**
+     * 双色球第一期的期号（2003 年第 1 期）
+     */
+    private static final String FIRST_PERIOD = "2003001";
+
     public Mono<Void> syncHistory(int count) {
-        return ballRepository.findTopByOrderByDrawDateDesc()
+        return ballRepository.findTopByOrderByDrawDateAsc()
                 .defaultIfEmpty(new LotteryDoubleBall())
-                .flatMap(latest -> {
-                    if (latest.getPeriod() == null) {
+                .flatMap(oldest -> {
+                    if (oldest.getPeriod() == null) {
                         // 数据库为空，拉取全部历史
                         log.info("数据库无历史数据，开始拉取全部双色球历史数据（2003年至今）...");
                         return syncAllHistory();
-                    } else {
-                        // 已有数据，从最新一期之后拉取所有缺失期数
-                        log.info("数据库最新期号为 {}，开始拉取缺失数据...", latest.getPeriod());
-                        return syncFromLatest(latest.getPeriod()).then();
                     }
+
+                    // 数据库已有数据，检查最小期号
+                    if (!FIRST_PERIOD.equals(oldest.getPeriod())) {
+                        // 最小期号不是 2003001，说明历史数据未拉全（可能上次中断），重新拉取全部
+                        log.warn("数据库最小期号为 {}，不是第一期 {}，历史数据不完整，重新拉取全部历史数据",
+                                oldest.getPeriod(), FIRST_PERIOD);
+                        // 先清空已有数据，避免重复
+                        return ballRepository.deleteAll()
+                                .then(numberRepository.deleteAll())
+                                .then(syncAllHistory());
+                    }
+
+                    // 最小期号是 2003001，历史数据完整，从最新一期之后拉取缺失数据
+                    return ballRepository.findTopByOrderByDrawDateDesc()
+                            .flatMap(latest -> {
+                                log.info("数据库最新期号为 {}，开始拉取缺失数据...", latest.getPeriod());
+                                return syncFromLatest(latest.getPeriod()).then();
+                            });
                 });
     }
 
@@ -171,6 +189,8 @@ public class LotterySyncService {
 
                     return Flux.fromIterable(toSave)
                             .concatMap(this::saveLotteryData)
+                            .onErrorContinue((e, obj) ->
+                                    log.error("保存期号 {} 数据失败: {}，跳过继续", obj, e.getMessage()))
                             .then(Mono.defer(() -> {
                                 // 本页已包含目标期号，或已到最后一页，停止
                                 boolean found = results.stream().anyMatch(r -> r.period.equals(latestPeriod));
@@ -180,6 +200,10 @@ public class LotterySyncService {
                                 // 继续翻下一页
                                 return syncPagesFrom(pageNo + 1, latestPeriod);
                             }));
+                })
+                .onErrorResume(e -> {
+                    log.error("处理第 {} 页失败: {}，跳过该页继续", pageNo, e.getMessage());
+                    return syncPagesFrom(pageNo + 1, latestPeriod);
                 });
     }
 
@@ -216,6 +240,8 @@ public class LotterySyncService {
 
     /**
      * 拉取全部历史数据（分页）
+     * <p>
+     * 逐页拉取，某一页出错不会中断后续页的处理，仅记录错误日志后继续下一页。
      */
     private Mono<Void> syncAllHistory() {
         return fetchPage(1)
@@ -225,6 +251,10 @@ public class LotterySyncService {
 
                     // 先处理第1页
                     return processPageResults(firstPage.results)
+                            .onErrorResume(e -> {
+                                log.error("第 1/{} 页数据处理失败: {}", totalPages, e.getMessage());
+                                return Mono.empty();
+                            })
                             .then(Mono.defer(() -> {
                                 // 再处理剩余页（第2页到最后一页）
                                 if (totalPages <= 1) {
@@ -232,19 +262,26 @@ public class LotterySyncService {
                                     return Mono.empty();
                                 }
                                 return Flux.range(2, totalPages - 1)
-                                        .concatMap(pageNo -> fetchPage(pageNo)
-                                                .flatMap(pageData -> {
-                                                    log.info("同步第 {}/{} 页数据（共 {} 条）",
-                                                            pageNo, totalPages, pageData.results.size());
-                                                    return processPageResults(pageData.results);
-                                                })
-                                                .doOnSuccess(v -> log.info("第 {}/{} 页同步完成", pageNo, totalPages))
-                                                .doOnError(e -> log.error("第 {}/{} 页同步失败: {}", pageNo, totalPages, e.getMessage())))
+                                        .concatMap(pageNo -> processSinglePage(pageNo, totalPages))
                                         .then();
                             }));
                 })
                 .doOnSuccess(v -> log.info("全部双色球历史数据同步完成"))
                 .doOnError(e -> log.error("历史数据同步失败: {}", e.getMessage()));
+    }
+
+    /**
+     * 处理单页数据，出错不中断后续页
+     */
+    private Mono<Void> processSinglePage(int pageNo, int totalPages) {
+        return fetchPage(pageNo)
+                .flatMap(pageData -> {
+                    log.info("同步第 {}/{} 页数据（共 {} 条）", pageNo, totalPages, pageData.results.size());
+                    return processPageResults(pageData.results);
+                })
+                .doOnSuccess(v -> log.info("第 {}/{} 页同步完成", pageNo, totalPages))
+                .doOnError(e -> log.error("第 {}/{} 页同步失败: {}", pageNo, totalPages, e.getMessage()))
+                .onErrorResume(e -> Mono.empty()); // 出错后继续下一页
     }
 
     /**
@@ -262,7 +299,7 @@ public class LotterySyncService {
      * @param pageNo 页码，从1开始
      */
     private Mono<PageData> fetchPage(int pageNo) {
-        return webClient.get()
+        return cwlWebClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .scheme("https")
                         .host("www.cwl.gov.cn")
@@ -292,7 +329,11 @@ public class LotterySyncService {
                         List<LotteryResult> results = new ArrayList<>();
                         if (resultArray != null && resultArray.isArray()) {
                             for (JsonNode item : resultArray) {
-                                results.add(parseCwlResult(item));
+                                try {
+                                    results.add(parseCwlResult(item));
+                                } catch (Exception e) {
+                                    log.error("解析单条开奖数据失败: {}，跳过该条", e.getMessage());
+                                }
                             }
                         }
 
@@ -355,26 +396,30 @@ public class LotterySyncService {
         // 蓝球号码
         result.blueBall = Integer.parseInt(item.get("blue").asText().trim());
 
-        // 销售额（元）
-        result.salesAmount = parseBigDecimal(item, "sales");
+        // 销售额（元）- 直接取原始字符串
+        result.salesAmount = getStringField(item, "sales");
         // 奖池金额（元）
-        result.poolAmount = parseBigDecimal(item, "poolmoney");
+        result.poolAmount = getStringField(item, "poolmoney");
 
         // 从 prizegrades 中解析一等奖和二等奖
-        result.firstPrizeCount = 0;
-        result.firstPrizeAmount = BigDecimal.ZERO;
-        result.secondPrizeCount = 0;
-        result.secondPrizeAmount = BigDecimal.ZERO;
+        result.firstPrizeCount = "0";
+        result.firstPrizeAmount = "0";
+        result.secondPrizeCount = "0";
+        result.secondPrizeAmount = "0";
 
         if (item.has("prizegrades") && item.get("prizegrades").isArray()) {
             for (JsonNode grade : item.get("prizegrades")) {
-                int type = grade.get("type").asInt();
-                if (type == 1) {
-                    result.firstPrizeCount = Integer.parseInt(grade.get("typenum").asText());
-                    result.firstPrizeAmount = new BigDecimal(grade.get("typemoney").asText());
-                } else if (type == 2) {
-                    result.secondPrizeCount = Integer.parseInt(grade.get("typenum").asText());
-                    result.secondPrizeAmount = new BigDecimal(grade.get("typemoney").asText());
+                try {
+                    int type = grade.get("type").asInt();
+                    if (type == 1) {
+                        result.firstPrizeCount = grade.get("typenum").asText();
+                        result.firstPrizeAmount = grade.get("typemoney").asText();
+                    } else if (type == 2) {
+                        result.secondPrizeCount = grade.get("typenum").asText();
+                        result.secondPrizeAmount = grade.get("typemoney").asText();
+                    }
+                } catch (Exception e) {
+                    log.warn("解析奖级数据失败: {}", e.getMessage());
                 }
             }
         }
@@ -475,14 +520,15 @@ public class LotterySyncService {
         };
     }
 
-    private BigDecimal parseBigDecimal(JsonNode root, String field) {
+    /**
+     * 安全获取 JSON 字符串字段值，null 或缺失时返回 "0"
+     */
+    private String getStringField(JsonNode root, String field) {
         if (root.has(field) && !root.get(field).isNull()) {
-            String val = root.get(field).asText().replace(",", "");
-            if (!val.isEmpty()) {
-                return new BigDecimal(val);
-            }
+            String val = root.get(field).asText();
+            return val.isEmpty() ? "0" : val;
         }
-        return BigDecimal.ZERO;
+        return "0";
     }
 
     /**
@@ -507,11 +553,11 @@ public class LotterySyncService {
         String weekday;
         int[] redBalls;
         int blueBall;
-        BigDecimal poolAmount;
-        BigDecimal salesAmount;
-        Integer firstPrizeCount;
-        BigDecimal firstPrizeAmount;
-        Integer secondPrizeCount;
-        BigDecimal secondPrizeAmount;
+        String poolAmount;
+        String salesAmount;
+        String firstPrizeCount;
+        String firstPrizeAmount;
+        String secondPrizeCount;
+        String secondPrizeAmount;
     }
 }
