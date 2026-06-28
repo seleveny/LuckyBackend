@@ -1,0 +1,26 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: lucky-backend
+  r2dbc:
+    name: default
+    url: r2dbc:mysql://172.18.0.7:3306/data_advocate?useUnicode=true&characterEncoding=utf8
+    username: root
+    password: root123
+    pool:
+      enabled: true
+      max-size: 50
+      initial-size: 30
+      max-idle-time: 10000
+  data:
+    redis:
+      host: 172.18.0.7
+      port: 6379
+      database: 1
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 1
+        shutdown-timeout: 100ms

@@ -1,0 +1,41 @@
+INFO||2026-04-23 15:13:18.678 - Starting DataAdvocateApplication using Java 21.0.10 with PID 51568 (C:\Users\User\IdeaProjects\data-advocate\target\classes started by User in C:\Users\User\IdeaProjects\data-advocate)
+DEBUG||2026-04-23 15:13:18.684 - Running with Spring Boot v4.0.5, Spring v7.0.7
+INFO||2026-04-23 15:13:18.685 - The following 1 profile is active: "dev"
+INFO||2026-04-23 15:13:21.076 - Started DataAdvocateApplication in 3.343 seconds (process running for 4.452)
+INFO||2026-04-23 15:14:20.383 - Starting DataAdvocateApplication using Java 21.0.10 with PID 40440 (C:\Users\User\IdeaProjects\data-advocate\target\classes started by User in C:\Users\User\IdeaProjects\data-advocate)
+DEBUG||2026-04-23 15:14:20.399 - Running with Spring Boot v4.0.5, Spring v7.0.7
+INFO||2026-04-23 15:14:20.399 - The following 1 profile is active: "dev"
+INFO||2026-04-23 15:14:22.438 - Started DataAdvocateApplication in 2.731 seconds (process running for 3.467)
+INFO||2026-04-23 15:16:00.055 - Starting DataAdvocateApplication using Java 21.0.10 with PID 33688 (C:\Users\User\IdeaProjects\data-advocate\target\classes started by User in C:\Users\User\IdeaProjects\data-advocate)
+DEBUG||2026-04-23 15:16:00.060 - Running with Spring Boot v4.0.5, Spring v7.0.7
+INFO||2026-04-23 15:16:00.060 - The following 1 profile is active: "dev"
+INFO||2026-04-23 15:16:02.708 - Started DataAdvocateApplication in 3.59 seconds (process running for 5.311)
+INFO||2026-04-23 15:23:18.315 - Starting DataAdvocateApplication using Java 21.0.10 with PID 17056 (C:\Users\User\IdeaProjects\data-advocate\target\classes started by User in C:\Users\User\IdeaProjects\data-advocate)
+DEBUG||2026-04-23 15:23:18.318 - Running with Spring Boot v4.0.5, Spring v7.0.7
+INFO||2026-04-23 15:23:18.319 - The following 1 profile is active: "dev"
+INFO||2026-04-23 15:23:22.826 - Started DataAdvocateApplication in 6.477 seconds (process running for 9.173)
+INFO||2026-04-23 15:24:44.370 - Starting DataAdvocateApplication using Java 21.0.10 with PID 52000 (C:\Users\User\IdeaProjects\data-advocate\target\classes started by User in C:\Users\User\IdeaProjects\data-advocate)
+DEBUG||2026-04-23 15:24:44.372 - Running with Spring Boot v4.0.5, Spring v7.0.7
+INFO||2026-04-23 15:24:44.373 - The following 1 profile is active: "dev"
+INFO||2026-04-23 15:24:46.401 - Started DataAdvocateApplication in 2.589 seconds (process running for 3.574)
+INFO||2026-04-23 15:24:50.308 - API_ENTRY|GET|/common/ok|null
+INFO||2026-04-23 15:24:50.398 - API_EXIT|GET|/common/ok|90|200
+INFO||2026-04-23 15:24:55.886 - API_ENTRY|GET|/common/ok|null
+INFO||2026-04-23 15:24:55.890 - API_EXIT|GET|/common/ok|4|200
+INFO||2026-04-23 15:25:10.112 - API_ENTRY|GET|/common/ok|null
+INFO||2026-04-23 15:25:10.114 - API_EXIT|GET|/common/ok|2|200
+INFO||2026-04-23 15:30:18.692 - Starting DataAdvocateApplication using Java 21.0.10 with PID 13752 (C:\Users\User\IdeaProjects\data-advocate\target\classes started by User in C:\Users\User\IdeaProjects\data-advocate)
+DEBUG||2026-04-23 15:30:18.694 - Running with Spring Boot v4.0.5, Spring v7.0.7
+INFO||2026-04-23 15:30:18.695 - The following 1 profile is active: "dev"
+INFO||2026-04-23 15:30:21.439 - Started DataAdvocateApplication in 3.421 seconds (process running for 4.098)
+INFO||2026-04-23 15:30:24.994 - API|GET /common/ok|null|106|200
+INFO||2026-04-23 15:45:00.632 - Starting DataAdvocateApplication using Java 21.0.10 with PID 11024 (C:\Users\User\IdeaProjects\data-advocate\target\classes started by User in C:\Users\User\IdeaProjects\data-advocate)
+DEBUG||2026-04-23 15:45:00.635 - Running with Spring Boot v4.0.5, Spring v7.0.7
+INFO||2026-04-23 15:45:00.636 - The following 1 profile is active: "dev"
+INFO||2026-04-23 15:45:04.347 - Started DataAdvocateApplication in 4.536 seconds (process running for 5.621)
+INFO||2026-04-23 15:45:29.172 - d292fe34 | GET /common/ok | req=null | resp={"code":200,"message":"成功","result":"hello world"} | 132ms | status=200
+INFO||2026-04-23 15:49:20.207 - Starting DataAdvocateApplication using Java 21.0.10 with PID 58652 (C:\Users\User\IdeaProjects\data-advocate\target\classes started by User in C:\Users\User\IdeaProjects\data-advocate)
+DEBUG||2026-04-23 15:49:20.209 - Running with Spring Boot v4.0.5, Spring v7.0.7
+INFO||2026-04-23 15:49:20.210 - The following 1 profile is active: "dev"
+INFO||2026-04-23 15:49:22.227 - Started DataAdvocateApplication in 2.672 seconds (process running for 3.4)
+INFO||2026-04-23 15:49:26.214 - 2e9f3556|GET /common/ok|null|{"code":200,"message":"成功","result":"hello world"}|159ms|[200]

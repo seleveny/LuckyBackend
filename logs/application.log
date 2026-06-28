@@ -1,0 +1,43 @@
+INFO||2026-04-23 16:06:00.553 - Starting DataAdvocateApplication using Java 21.0.10 with PID 54516 (C:\Users\User\IdeaProjects\data-advocate\target\classes started by User in C:\Users\User\IdeaProjects\data-advocate)
+DEBUG||2026-04-23 16:06:00.558 - Running with Spring Boot v4.0.5, Spring v7.0.7
+INFO||2026-04-23 16:06:00.558 - The following 1 profile is active: "dev"
+INFO||2026-04-23 16:06:02.651 - Started DataAdvocateApplication in 2.749 seconds (process running for 3.457)
+INFO|2026-04-23 16:07:02.499 - Starting DataAdvocateApplication using Java 21.0.10 with PID 42816 (C:\Users\User\IdeaProjects\data-advocate\target\classes started by User in C:\Users\User\IdeaProjects\data-advocate)
+DEBUG|2026-04-23 16:07:02.501 - Running with Spring Boot v4.0.5, Spring v7.0.7
+INFO|2026-04-23 16:07:02.501 - The following 1 profile is active: "dev"
+INFO|2026-04-23 16:07:04.539 - Started DataAdvocateApplication in 2.625 seconds (process running for 3.388)
+INFO|2026-04-23 16:07:06.944 - d73b9e6008b84fed8595584eada6ba4b|GET /common/ok|null|{"code":200,"message":"成功","result":"hello world"}|137ms|[200]
+INFO|2026-04-23 16:08:52.910 - Starting DataAdvocateApplication using Java 21.0.10 with PID 66120 (C:\Users\User\IdeaProjects\data-advocate\target\classes started by User in C:\Users\User\IdeaProjects\data-advocate)
+DEBUG|2026-04-23 16:08:52.912 - Running with Spring Boot v4.0.5, Spring v7.0.7
+INFO|2026-04-23 16:08:52.912 - The following 1 profile is active: "dev"
+INFO|2026-04-23 16:08:55.990 - Started DataAdvocateApplication in 3.737 seconds (process running for 4.995)
+INFO|2026-04-23 16:08:56.683 - Starting DataAdvocateApplication using Java 21.0.10 with PID 49260 (C:\Users\User\IdeaProjects\data-advocate\target\classes started by User in C:\Users\User\IdeaProjects\data-advocate)
+DEBUG|2026-04-23 16:08:56.687 - Running with Spring Boot v4.0.5, Spring v7.0.7
+INFO|2026-04-23 16:08:56.688 - The following 1 profile is active: "dev"
+INFO|2026-04-23 16:08:57.324 - 43fa7a495c71481d91358649d9aa97cf|GET /common/ok|null|{"code":200,"message":"成功","result":"hello world"}|269ms|[200]
+WARN|2026-04-23 16:09:02.073 - Exception encountered during context initialization - cancelling refresh attempt: org.springframework.context.ApplicationContextException: Failed to start bean 'webServerStartStop'
+ERROR|2026-04-23 16:09:02.128 - 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Web server failed to start. Port 8080 was already in use.
+
+Action:
+
+Identify and stop the process that's listening on port 8080 or configure this application to listen on another port.
+
+INFO|2026-04-23 16:09:02.151 - 4cf4a77e6f194f179302d5f1f0717c07|GET /common/ok|null|{"code":200,"message":"成功","result":"hello world"}|5ms|[200]
+INFO|2026-04-23 16:09:26.661 - Starting DataAdvocateApplication using Java 21.0.10 with PID 53300 (C:\Users\User\IdeaProjects\data-advocate\target\classes started by User in C:\Users\User\IdeaProjects\data-advocate)
+DEBUG|2026-04-23 16:09:26.663 - Running with Spring Boot v4.0.5, Spring v7.0.7
+INFO|2026-04-23 16:09:26.663 - The following 1 profile is active: "dev"
+INFO|2026-04-23 16:09:28.711 - Started DataAdvocateApplication in 2.762 seconds (process running for 3.448)
+INFO|2026-04-23 16:09:35.333 - 46ec8718fb7947d898de296d0e4afcbe|GET /common/ok|null|{"code":200,"message":"成功","result":"hello world"}|126ms|[200]
+INFO|2026-04-23 16:10:35.117 - Starting DataAdvocateApplication using Java 21.0.10 with PID 44352 (C:\Users\User\IdeaProjects\data-advocate\target\classes started by User in C:\Users\User\IdeaProjects\data-advocate)
+DEBUG|2026-04-23 16:10:35.119 - Running with Spring Boot v4.0.5, Spring v7.0.7
+INFO|2026-04-23 16:10:35.120 - The following 1 profile is active: "dev"
+INFO|2026-04-23 16:10:37.113 - Started DataAdvocateApplication in 2.621 seconds (process running for 3.307)
+INFO|2026-04-23 16:10:40.706 - 21f7d9f0c8c44c1faa8ba180d28a9f28|GET /common/ok|null|{"code":200,"message":"成功","result":"hello world"}|119ms|[200]
