@@ -5,17 +5,21 @@ spring:
     name: lucky-backend
   r2dbc:
     name: default
-    url: r2dbc:mysql://172.18.0.7:3306/data_advocate?useUnicode=true&characterEncoding=utf8
+    url: r2dbc:mysql://localhost:3306/lucky?useUnicode=true&characterEncoding=utf8
     username: root
-    password: root123
+    password: Xu914939
     pool:
       enabled: true
       max-size: 50
       initial-size: 30
       max-idle-time: 10000
+  opensearch:
+    uris: http://localhost:9200
+    connection-timeout: 5000
+    socket-timeout: 60000
   data:
     redis:
-      host: 172.18.0.7
+      host: localhost
       port: 6379
       database: 1
       lettuce:
