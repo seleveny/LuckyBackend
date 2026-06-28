@@ -1,7 +1,6 @@
 package com.yfqb.lucky.service;
 
 import com.yfqb.lucky.basic.IResult;
-import org.opensearch.client.json.JsonData;
 import org.opensearch.client.opensearch.OpenSearchClient;
 import org.opensearch.client.opensearch._types.Result;
 import org.opensearch.client.opensearch.core.*;
@@ -9,7 +8,6 @@ import org.opensearch.client.opensearch.core.bulk.BulkOperation;
 import org.opensearch.client.opensearch.core.bulk.IndexOperation;
 import org.opensearch.client.opensearch.indices.CreateIndexRequest;
 import org.opensearch.client.opensearch.indices.DeleteIndexRequest;
-import org.opensearch.client.opensearch.indices.GetIndexRequest;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -58,11 +56,14 @@ public class OpenSearchService {
             if (exists) {
                 return IResult.error("索引已存在: " + indexName);
             }
-            CreateIndexRequest request = CreateIndexRequest.of(r ->
-                    r.index(indexName).withJson(new java.io.StringReader(mappingJson))
-            );
-            client.indices().create(request);
-            return IResult.success(true, "索引创建成功");
+            try (org.opensearch.client.opensearch.generic.Response response = client.generic()
+                    .execute(org.opensearch.client.opensearch.generic.Requests.builder()
+                            .endpoint("/" + indexName)
+                            .method("PUT")
+                            .json(mappingJson)
+                            .build())) {
+                return IResult.success(true, "索引创建成功");
+            }
         } catch (IOException e) {
             return IResult.error("创建索引失败: " + e.getMessage());
         }
@@ -153,9 +154,8 @@ public class OpenSearchService {
                             .from(from)
                             .size(size)
                             .query(q -> q
-                                    .match(m -> m
-                                            .field("_all")
-                                            .query(JsonData.of(queryText))
+                                    .multiMatch(m -> m
+                                            .query(queryText)
                                     )
                             ),
                     Map.class
@@ -193,7 +193,7 @@ public class OpenSearchService {
 
             BulkResponse response = client.bulk(r -> r.operations(operations));
             int successCount = (int) response.items().stream()
-                    .filter(item -> !item.error().isPresent())
+                    .filter(item -> item.error() == null)
                     .count();
             return IResult.success(successCount, "批量索引完成");
         } catch (IOException e) {
