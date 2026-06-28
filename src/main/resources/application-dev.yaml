@@ -13,6 +13,15 @@ spring:
       max-size: 50
       initial-size: 30
       max-idle-time: 10000
+  # Flyway 数据库迁移配置（使用 JDBC，与 R2DBC 独立）
+  flyway:
+    enabled: true
+    url: jdbc:mysql://localhost:3306/lucky?useUnicode=true&characterEncoding=utf8&allowPublicKeyRetrieval=true
+    user: root
+    password: Xu914939
+    locations: classpath:db
+    baseline-on-migrate: true
+    create-schemas: true
   opensearch:
     uris: http://localhost:9200
     connection-timeout: 5000
