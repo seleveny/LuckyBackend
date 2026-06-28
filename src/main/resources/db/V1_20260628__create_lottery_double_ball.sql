@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS `lottery_double_ball` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
     `period` VARCHAR(20) NOT NULL COMMENT '期号，如 2024068',
     `draw_date` DATE NOT NULL COMMENT '开奖日期',
+    `weekday` VARCHAR(10) NOT NULL COMMENT '星期，如 星期二',
     `red_one` INT NOT NULL COMMENT '红球1 (1-33)',
     `red_two` INT NOT NULL COMMENT '红球2 (1-33)',
     `red_three` INT NOT NULL COMMENT '红球3 (1-33)',
