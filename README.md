@@ -145,7 +145,43 @@ mvn spring-boot:run -Dspring-boot.run.profiles=dev
 java -jar target/LuckyBackend-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
 ```
 
-## 双色球开奖数据同步
+## WebClient 配置
+
+`WebClientConfig` 提供三个 Bean，按需注入：
+
+| Bean 名 | 类型 | 说明 | 注入方式 |
+|---------|------|------|---------|
+| `webClientBuilder` | `WebClient.Builder` | 通用 Builder，无默认头部，16MB 缓冲，gzip 自动解压 | `@Resource` |
+| `webClient` | `WebClient` | 通用实例，无默认头部，适合简单 GET/POST | `@Resource(name = "webClient")` |
+| `cwlWebClient` | `WebClient` | 福彩网专用，携带浏览器请求头/Cookie 绕过反爬 | `@Resource(name = "cwlWebClient")` |
+
+**注入示例：**
+
+```java
+// 通用 - 简单请求
+@Resource
+private WebClient webClient;
+
+// 通用 - 需要自定义头部/配置
+@Resource
+private WebClient.Builder webClientBuilder;
+
+// 福彩专用
+@Resource(name = "cwlWebClient")
+private WebClient cwlWebClient;
+```
+
+> `@Bean` 默认以方法名作为 Bean 名称，因此 `cwlWebClient()` 方法自动生成名为 `"cwlWebClient"` 的 Bean。
+> `@Resource` 默认按字段名匹配，加上 `name` 属性更显式安全。
+
+### 数据库表结构
+
+| 表 | 说明 |
+|------|------|
+| `lottery_double_ball` | 双色球开奖记录主表，每期一条记录 |
+| `lottery_double_ball_number` | 双色球号码明细表，每期 7 行（6 红球 + 1 蓝球） |
+
+> 金额/数量字段（`pool_amount`、`first_prize_count`、`first_prize_amount`、`second_prize_count`、`second_prize_amount`、`sales_amount`）均以 `VARCHAR` 存储，直接保存福彩网返回的原始字符串，避免因脏数据（如中文注释、空字符串）导致解析失败。
 
 ### 数据来源
 
@@ -177,22 +213,16 @@ API 返回格式（单条开奖数据）：
 }
 ```
 
-### 数据库表结构
-
-| 表 | 说明 |
-|------|------|
-| `lottery_double_ball` | 双色球开奖记录主表，每期一条记录 |
-| `lottery_double_ball_number` | 双色球号码明细表，每期 7 行（6 红球 + 1 蓝球） |
-
 ### 同步策略
 
 #### 1. 首次全量同步（`syncHistory`）
 
 服务首次启动时，通过 `@PostConstruct` 自动触发：
 
-1. 查询数据库最新期号
+1. 查询数据库最小期号
 2. **数据库为空** → 调用 `syncAllHistory()`，从第 1 页开始拉取全部历史数据（2003 年至今），逐页写入
-3. **数据库已有数据** → 调用 `syncFromLatest()`，进入增量同步模式
+3. **数据库已有数据，但最小期号不是 `2003001`** → 历史数据不完整（可能上次中断），清空后重新拉取全部
+4. **最小期号是 `2003001`** → 历史数据完整，从最新一期之后拉取缺失数据
 
 #### 2. 增量同步（`syncFromLatest` → `syncPagesFrom`）
 
@@ -201,10 +231,10 @@ API 返回格式（单条开奖数据）：
 ```
 syncFromLatest(latestPeriod)
   └─ syncPagesFrom(pageNo=1, latestPeriod)
-       ├─ fetchPage(pageNo) → 请求福彩网 API
+       ├─ fetchPage(pageNo) → 请求福彩网 API（使用 cwlWebClient）
        ├─ stream.takeWhile(r → r.period > latestPeriod) → 过滤出比最新期号新的数据
-       ├─ toSave 为空？ → 后续页更旧，停止翻页
-       ├─ 逐个 concatMap 写入数据库（幂等）
+       ├─ toSave 为空？ → 检查 API 最新一期是否接近当天，否则抛异常让调用方重试
+       ├─ 逐个 concatMap 写入数据库（幂等），单条失败 onErrorContinue 跳过
        └─ 本页包含 latestPeriod 或已到最后一页？ → 停止 | 否则继续翻下一页
 ```
 
@@ -217,6 +247,8 @@ syncFromLatest(latestPeriod)
 | **`takeWhile` 过滤** | 只保留比 `latestPeriod` 大的数据，遇到 ≤ 的立即截断 |
 | **提前停止** | `toSave.isEmpty()` → 本页第一条已 ≤ `latestPeriod`，后续页更旧，立即停止 |
 | **幂等写入** | `saveLotteryData()` 先按 `period` 查库，已存在则跳过 |
+| **整页容错** | 某一页解析失败 `onErrorResume` 跳过，继续下一页 |
+| **单条容错** | 单条数据解析失败 try-catch 跳过，不影响同页其他数据 |
 
 示例：数据库最新是 `2026050`，第 1 页返回 `[2026072 ... 2026001]`
 → `takeWhile` 写入 `2026072 → ... → 2026051`（比 `2026050` 新的）
@@ -283,14 +315,14 @@ syncFromLatest(latestPeriod)
 
 | 类 | 说明 |
 |------|------|
-| `LotterySyncService` | 同步核心逻辑：分页拉取、JSON 解析、幂等写入 |
+| `LotterySyncService` | 同步核心逻辑：分页拉取、JSON 解析、幂等写入。使用 `@Resource` 注入依赖 |
 | `LotterySyncTask` | 定时任务调度：首次全量补全 + 开奖日 21:30 同步 + 每分钟重试到 22:00 |
 | `LotteryApiConfig` | API 配置参数（name、pageSize、cron、historyEnable） |
-| `LotteryDoubleBall` | 双色球开奖记录 PO（period、drawDate、weekday、红球、蓝球、奖池等） |
+| `LotteryDoubleBall` | 双色球开奖记录 PO（period、drawDate、weekday、红球、蓝球、奖池等，金额/数量字段为 `String` 类型） |
 | `LotteryDoubleBallNumber` | 双色球号码明细 PO（period、drawDate、number、type） |
-| `LotteryDoubleBallRepository` | 开奖记录 Repository（按 period 查、按日期范围查、查最新） |
+| `LotteryDoubleBallRepository` | 开奖记录 Repository（按 period 查、按日期范围查、查最新/最早） |
 | `LotteryDoubleBallNumberRepository` | 号码明细 Repository（按号码查出现次数、最近出现等） |
-| `WebClientConfig` | WebClient 配置（16MB 内存缓冲） |
+| `WebClientConfig` | WebClient 配置：通用 Builder、通用 WebClient、福彩专用 cwlWebClient（带浏览器请求头） |
 | `TransactionConfig` | 响应式事务管理器 + TransactionalOperator Bean |
 | `SchedulingConfig` | 启用 @Scheduled 定时任务支持 |
 

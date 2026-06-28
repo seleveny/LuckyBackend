@@ -7,7 +7,7 @@ import com.yfqb.lucky.model.po.LotteryDoubleBall;
 import com.yfqb.lucky.model.po.LotteryDoubleBallNumber;
 import com.yfqb.lucky.repository.LotteryDoubleBallNumberRepository;
 import com.yfqb.lucky.repository.LotteryDoubleBallRepository;
-import lombok.RequiredArgsConstructor;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.reactive.TransactionalOperator;
@@ -29,15 +29,20 @@ import java.util.List;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class LotterySyncService {
 
-    private final LotteryApiConfig lotteryApiConfig;
-    private final LotteryDoubleBallRepository ballRepository;
-    private final LotteryDoubleBallNumberRepository numberRepository;
-    private final WebClient cwlWebClient;
-    private final ObjectMapper objectMapper;
-    private final TransactionalOperator transactionalOperator;
+    @Resource
+    private LotteryApiConfig lotteryApiConfig;
+    @Resource
+    private LotteryDoubleBallRepository ballRepository;
+    @Resource
+    private LotteryDoubleBallNumberRepository numberRepository;
+    @Resource
+    private WebClient cwlWebClient;
+    @Resource
+    private ObjectMapper objectMapper;
+    @Resource
+    private TransactionalOperator transactionalOperator;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 

@@ -29,6 +29,7 @@ public class WebClientConfig {
      * 通用 WebClient.Builder
      * <p>
      * 仅配置连接器和编解码大小，不绑定任何默认头部，适用于请求任意第三方 API。
+     * 如果需要自定义头部，注入此 Bean 后自行调用 .defaultHeader(...) 再 .build()。
      */
     @Bean
     public WebClient.Builder webClientBuilder() {
@@ -40,10 +41,22 @@ public class WebClientConfig {
     }
 
     /**
+     * 通用 WebClient（无默认头部）
+     * <p>
+     * 如果只是简单 GET/POST 请求，不需要自定义头部，直接注入此 Bean 即可。
+     * 注意：此 Bean 不携带任何默认请求头，适用于请求一般第三方 API。
+     */
+    @Bean
+    public WebClient webClient(WebClient.Builder webClientBuilder) {
+        return webClientBuilder.build();
+    }
+
+    /**
      * 福彩网专用 WebClient
      * <p>
      * 携带浏览器级别的请求头和 Cookie，用于绕过 cwl.gov.cn 的反爬检测。
      * Cookie 中的 HMF_CI 和 21_vq 来自浏览器实际请求，过期后需更新。
+     * 注意：此 Bean 仅用于拉取双色球数据，其他服务请注入 {@link #webClient} 或 {@link #webClientBuilder}。
      */
     @Bean
     public WebClient cwlWebClient(WebClient.Builder webClientBuilder) {
