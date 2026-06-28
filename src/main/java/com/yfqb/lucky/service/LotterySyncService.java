@@ -105,9 +105,9 @@ public class LotterySyncService {
      * @param count 参数已废弃，保留仅用于兼容
      */
     /**
-     * 双色球第一期的期号（2003 年第 1 期）
+     * 双色球第一期的期号（2013 年第 1 期）
      */
-    private static final String FIRST_PERIOD = "2003001";
+    private static final String FIRST_PERIOD = "2013001";
 
     public Mono<Void> syncHistory(int count) {
         return ballRepository.findTopByOrderByDrawDateAsc()
@@ -115,13 +115,13 @@ public class LotterySyncService {
                 .flatMap(oldest -> {
                     if (oldest.getPeriod() == null) {
                         // 数据库为空，拉取全部历史
-                        log.info("数据库无历史数据，开始拉取全部双色球历史数据（2003年至今）...");
+                        log.info("数据库无历史数据，开始拉取全部双色球历史数据（2013年至今）...");
                         return syncAllHistory();
                     }
 
                     // 数据库已有数据，检查最小期号
                     if (!FIRST_PERIOD.equals(oldest.getPeriod())) {
-                        // 最小期号不是 2003001，说明历史数据未拉全（可能上次中断），重新拉取全部
+                        // 最小期号不是 2013001，说明历史数据未拉全（可能上次中断），重新拉取全部
                         log.warn("数据库最小期号为 {}，不是第一期 {}，历史数据不完整，重新拉取全部历史数据",
                                 oldest.getPeriod(), FIRST_PERIOD);
                         // 先清空已有数据，避免重复
@@ -130,7 +130,7 @@ public class LotterySyncService {
                                 .then(syncAllHistory());
                     }
 
-                    // 最小期号是 2003001，历史数据完整，从最新一期之后拉取缺失数据
+                    // 最小期号是 2013001，历史数据完整，从最新一期之后拉取缺失数据
                     return ballRepository.findTopByOrderByDrawDateDesc()
                             .flatMap(latest -> {
                                 log.info("数据库最新期号为 {}，开始拉取缺失数据...", latest.getPeriod());

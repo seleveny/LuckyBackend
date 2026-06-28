@@ -56,7 +56,7 @@ Desktop.ini
 *~
 
 # ========== Logs ==========
-logs/
+logs
 *.log
 
 # ========== Environment & Config ==========
