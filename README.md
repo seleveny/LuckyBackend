@@ -1,22 +1,23 @@
 # 幸运盒子后台 (LuckyBackend)
 
-彩票业务的后台管理系统，基于 Spring Boot 4.0.5 + WebFlux 响应式技术栈。
+双色球彩票业务的后台管理系统，基于 Spring Boot 4.0.5 + WebFlux 响应式技术栈。
 
 ## 技术栈
 
-| 技术 | 版本 |
-|------|------|
-| Java | 21 |
-| Spring Boot | 4.0.5 |
-| Spring Framework | 7.0.7 |
-| Spring Security | 7.0.5 |
-| Spring WebFlux | 响应式（非阻塞） |
-| R2DBC | 响应式数据库访问 |
-| OpenSearch | 2.13.0（搜索引擎） |
-| Redis | 7.2（缓存/会话管理） |
-| MySQL | 8.4.0 |
-| Jackson | 3.1.1（tools.jackson） |
-| Maven | - |
+| 技术 | 版本 | 说明 |
+|------|------|------|
+| Java | 21 | |
+| Spring Boot | 4.0.5 | |
+| Spring Framework | 7.0.7 | |
+| Spring Security | 7.0.5 | 安全认证 |
+| Spring WebFlux | 响应式（非阻塞） | |
+| R2DBC | 响应式 | MySQL 响应式数据库访问 |
+| Flyway | - | 数据库版本迁移管理 |
+| OpenSearch | 2.13.0 | 搜索引擎 |
+| Redis | 7.2 | 缓存 / 会话管理 |
+| MySQL | 8.4.0 | |
+| Jackson | 3.1.1（tools.jackson） | JSON 序列化 |
+| Maven | - | 构建工具 |
 
 ## 项目结构
 
@@ -26,6 +27,7 @@ src/main/java/com/yfqb/lucky/
 ├── basic/
 │   └── IResult.java                  # 统一响应封装
 ├── config/
+│   ├── FlywayConfig.java             # Flyway 数据库迁移配置
 │   ├── OpenSearchConfig.java         # OpenSearch 客户端配置
 │   └── SecurityConfig.java           # Spring Security 安全配置
 ├── constant/
@@ -54,7 +56,9 @@ src/main/resources/
 ├── application.yaml                  # 基础配置
 ├── application-dev.yaml              # 开发环境配置
 ├── application-prod.yaml             # 生产环境配置
-└── logback-spring.xml                # 日志配置
+├── logback-spring.xml                # 日志配置
+└── db/                               # Flyway 数据库迁移脚本
+    └── V1_20260628__create_lottery_double_ball.sql  # 双色球开奖记录表
 ```
 
 ## 中间件（Docker Compose）
@@ -84,10 +88,22 @@ mvn spring-boot:run -Dspring-boot.run.profiles=dev
 
 ### 数据库连接
 
-- **数据库名**：`lucky`
+- **数据库名**：`lottery`
 - **用户**：`root`
 - **密码**：`Xu914939`
-- **连接地址**：`r2dbc:mysql://localhost:3306/lucky`
+- **连接地址**：`r2dbc:mysql://localhost:3306/lottery`
+
+### 数据库迁移（Flyway）
+
+应用启动时自动执行 `src/main/resources/db/` 目录下的迁移脚本，无需手动执行 SQL。
+
+迁移脚本命名规范：`V{版本号}_{日期}__{描述}.sql`
+
+```bash
+# 示例
+V1_20260628__create_lottery_double_ball.sql
+V2_20260701__add_some_table.sql
+```
 
 ### API 端点
 
