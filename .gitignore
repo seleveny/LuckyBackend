@@ -1,0 +1,85 @@
+# ========== Maven ==========
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+*.war
+*.ear
+
+# ========== IDE - IntelliJ IDEA ==========
+.idea/
+*.iml
+*.iws
+*.ipr
+.settings/
+.project
+.classpath
+.factorypath
+
+# ========== IDE - VS Code ==========
+.vscode/
+*.code-workspace
+
+# ========== IDE - Eclipse ==========
+.settings/
+.project
+.classpath
+.factorypath
+*.launch
+
+# ========== IDE - NetBeans ==========
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+nbactions.xml
+nb-configuration.xml
+
+# ========== macOS ==========
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+Thumbs.db
+Desktop.ini
+
+# ========== Java ==========
+*.class
+*.jar
+*.log
+*.tmp
+*.swp
+*~
+
+# ========== Logs ==========
+logs/
+*.log
+
+# ========== Environment & Config ==========
+.env
+.env.local
+.env.*.local
+application-local.yaml
+application-local.yml
+application-local.properties
+
+# ========== Build output ==========
+/build/
+/dist/
+/out/
+
+# ========== Docker ==========
+docker-compose.override.yml
+
+# ========== CodeBuddy ==========
+.codebuddy/
+
+# ========== Others ==========
+*.bak
+*.orig
+*.save
+.history/
