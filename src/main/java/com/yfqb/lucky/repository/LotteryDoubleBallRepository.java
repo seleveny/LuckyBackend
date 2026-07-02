@@ -1,6 +1,7 @@
 package com.yfqb.lucky.repository;
 
 import com.yfqb.lucky.model.po.LotteryDoubleBall;
+import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.r2dbc.repository.R2dbcRepository;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
@@ -35,7 +36,15 @@ public interface LotteryDoubleBallRepository extends R2dbcRepository<LotteryDoub
     Mono<LotteryDoubleBall> findTopByOrderByDrawDateAsc();
 
     /**
-     * 查询最近 N 期
+     * 查询最近 N 期，按开奖日期倒序（取最新的 N 条）
      */
-    Flux<LotteryDoubleBall> findTop100ByOrderByDrawDateDesc();
+    @Query("SELECT * FROM lottery_double_ball ORDER BY draw_date DESC, period DESC LIMIT :limit OFFSET :offset")
+    Flux<LotteryDoubleBall> findLatestPage(int limit, int offset);
+
+    /**
+     * 查询最近 N 期的总数
+     */
+    @Query("SELECT COUNT(*) FROM lottery_double_ball")
+    Mono<Long> countAll();
+
 }

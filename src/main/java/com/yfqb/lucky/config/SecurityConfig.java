@@ -14,10 +14,8 @@ public class SecurityConfig {
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         return http
                 .authorizeExchange(exchanges -> exchanges
-                        // 放行 /common/** 路径
-                        .pathMatchers("/common/**").permitAll()
-                        // 其他所有请求需要认证
-                        .anyExchange().authenticated()
+                        // 全部放行，后续接入登录态后再限制
+                        .anyExchange().permitAll()
                 )
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .build();

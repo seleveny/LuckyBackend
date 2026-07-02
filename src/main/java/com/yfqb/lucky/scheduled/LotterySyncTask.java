@@ -127,7 +127,7 @@ public class LotterySyncTask {
             return;
         }
 
-        log.info("首次启动，开始拉取全部双色球历史数据...");
+        log.info("系统启动，开始拉取全部双色球历史数据...");
         historyRunning.set(true);
         lotterySyncService.syncHistory(0)
                 .doOnSuccess(v -> {
